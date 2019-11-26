@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.songyinglong.cms.mapper.CollectMapeer">
+
+	<resultMap type="com.songyinglong.cms.domain.Collect" id="collectMap">
+		<id column="id" property="id"/>
+		<result column="text" property="text"/>
+		<result column="url" property="url"/>
+		<result column="created" property="created"/>
+		<result column="user_id" property="userId"/>
+		<association property="user" select="com.songyinglong.cms.mapper.UserMapper.selectByPrimaryKey" column="user_id"></association>
+	</resultMap>
+	<select id="queryByTextAndUserId" resultMap="collectMap">
+		select * from cms_collect where text=#{text} and user_id=#{userId} order by created desc
+	</select>
+	<insert id="insertCollect">
+		insert into cms_collect values (null,#{text},#{url},#{created},#{userId})
+	</insert>
+	<select id="queryCollectsByUser" resultMap="collectMap">
+		select * from cms_collect where user_id=#{id}
+	</select>
+	<delete id="deleteById">
+		delete from cms_collect where id=#{id}
+	</delete>
+</mapper>
