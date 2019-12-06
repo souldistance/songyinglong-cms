@@ -29,12 +29,14 @@ import com.songyinglong.cms.domain.ArticleWithBLOBs;
 import com.songyinglong.cms.domain.Category;
 import com.songyinglong.cms.domain.Channel;
 import com.songyinglong.cms.domain.Collect;
+import com.songyinglong.cms.domain.Comment;
 import com.songyinglong.cms.domain.User;
 import com.songyinglong.cms.exception.CMSAjaxException;
 import com.songyinglong.cms.service.ArticleService;
 import com.songyinglong.cms.service.CategoryService;
 import com.songyinglong.cms.service.ChannelService;
 import com.songyinglong.cms.service.CollectService;
+import com.songyinglong.cms.service.CommentService;
 import com.songyinglong.cms.service.UserService;
 import com.songyinglong.cms.util.Result;
 import com.songyinglong.cms.util.ResultUtil;
@@ -62,6 +64,9 @@ public class MyController {
 
 	@Resource
 	private CollectService collectService;
+	
+	@Resource
+	private CommentService commentService;
 	/**
 	 * 
 	 * @Title: myIndex
@@ -318,5 +323,13 @@ public class MyController {
 		return "/my/article/detail";
 	}
 
-	 
+	@RequestMapping("/addComment")
+	@ResponseBody
+	public Result addComment(Comment comment,HttpSession session) {
+		User user = (User) session.getAttribute("user");
+		comment.setUser(user);
+		comment.setCreated(new Date());
+		commentService.addComment(comment);
+		return ResultUtil.success();
+	}
 }

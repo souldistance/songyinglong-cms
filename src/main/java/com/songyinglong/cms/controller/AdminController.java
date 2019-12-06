@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.songyinglong.cms.domain.Article;
 import com.songyinglong.cms.domain.ArticleWithBLOBs;
@@ -157,7 +156,7 @@ public class AdminController {
 	/**
 	 * 
 	 * @Title: queryLinks 
-	 * @Description: 查询全部友情链接
+	 * @Description: 查询10条友情链接
 	 * @param pageNum
 	 * @param pageSize
 	 * @param model
@@ -165,8 +164,8 @@ public class AdminController {
 	 * @return: String
 	 */
 	@RequestMapping("/link/links")
-	public String queryLinks(@RequestParam(defaultValue = "1") Integer pageNum,@RequestParam(defaultValue = "3") Integer pageSize,Model model) {
-		PageInfo<Link> pageInfo = linkService.selectLinks(pageNum, pageSize);
+	public String queryLinks(@RequestParam(defaultValue = "1") Integer pageNum,@RequestParam(defaultValue = "10") Integer pageSize,Model model) {
+		PageInfo<Link> pageInfo = linkService.selectLinks(1, 10);
 		model.addAttribute("pg", pageInfo);
 		return "admin/link/links";
 	}

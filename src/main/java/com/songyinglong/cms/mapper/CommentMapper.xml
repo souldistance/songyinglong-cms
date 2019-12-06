@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.songyinglong.cms.mapper.CommentMapper">
+	<resultMap id="BaseResultMap" type="com.songyinglong.cms.domain.Comment">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="content" property="content" jdbcType="CLOB" typeHandler="org.apache.ibatis.type.ClobTypeHandler"/>
+    <result column="created" property="created" jdbcType="TIMESTAMP"/>
+    <result column="user_id" property="user.id" jdbcType="INTEGER"/>
+    <result column="article_id" property="article.id" jdbcType="INTEGER"/>
+    <result column="username" property="user.username" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  
+  <insert id="addComment" >
+    insert into cms_comment
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="article != null">
+       article_id,
+      </if>
+      <if test="user.id != null">
+        user_id,
+      </if>
+      <if test="created != null">
+        created,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="article != null">
+        #{article.id,jdbcType=VARCHAR},
+      </if>
+      <if test="user.id != null">
+        #{user.id,jdbcType=INTEGER},
+      </if>
+      <if test="created != null">
+        #{created,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=CLOB},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="selectComments" resultMap="BaseResultMap">
+	select * from cms_comment c ,cms_user u where c.user_id = #{user.id}
+    <if test="article != null">
+    and  c.user_id=u.id 	AND c.article_id = #{article.id,jdbcType=INTEGER}
+    </if>
+  </select>
+</mapper>

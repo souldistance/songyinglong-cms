@@ -21,25 +21,34 @@
 		$("#title").html("“" + '${article.title }' + "”");
 	})
 	function collect() {
-		var text='${article.title }';
-		var url=location.href;
-		$.ajax({
-			url:"/index/article/collect",
-			data:{text:text,url:url},
-			type:"post",
-			success:function(flag){
-				if(flag.code==0){
-					alert("收藏成功!");
-					$("#login").html(" ");
-					$("#collect").html("<span style='color: red;font-size: 18px;'>★已收藏</span>");
-				}else{
-					alert(flag.message);
-					$("#login").html("<button type='button' class='btn btn-info' onclick='tologin()'>登录</button>");
-				}
-			},error:function(){
-				alert("系统错误!");
-			}
-		}) 
+		var text = '${article.title }';
+		var url = location.href;
+		$
+				.ajax({
+					url : "/index/article/collect",
+					data : {
+						text : text,
+						url : url
+					},
+					type : "post",
+					success : function(flag) {
+						if (flag.code == 0) {
+							alert("收藏成功!");
+							$("#login").html(" ");
+							$("#collect")
+									.html(
+											"<span style='color: red;font-size: 18px;'>★已收藏</span>");
+						} else {
+							alert(flag.message);
+							$("#login")
+									.html(
+											"<button type='button' class='btn btn-info' onclick='tologin()'>登录</button>");
+						}
+					},
+					error : function() {
+						alert("系统错误!");
+					}
+				})
 	}
 	function back() {
 		location = "/";
@@ -67,7 +76,8 @@
 				<span style="color: red; font-size: 18px;">★已收藏</span>
 			</c:if>
 			<c:if test="${collect==null }">
-				<a href="#" onclick="collect()"><span style="font-size: 18px;">☆收藏</span></a><div id="login" style="float: left;"></div>
+				<a href="#" onclick="collect()"><span style="font-size: 18px;">☆收藏</span></a>
+				<div id="login" style="float: left;"></div>
 			</c:if>
 		</div>
 		<div style="text-align: right;">
@@ -104,6 +114,87 @@
 				class="sr-only">Next</span>
 			</a>
 		</div>
+		<hr />
+		<div class="container">
+			<h4>最新评论</h4>
+		</div>
+		<div class="container" id="comments">
+
+			<c:forEach items="${comments}" var="comment">
+				<div class="media">
+					<div class="media-left">
+						<a href="#"> <img class="media-object"
+							src="/pic/default_avatar.png" style="max-height: 50px" alt="...">
+						</a>
+					</div>
+					<div class="media-body">
+						<h4 class="media-heading">${comment.user.username}：</h4>
+						<p>${comment.content}</p>
+						<p>
+							评论时间：
+							<fmt:formatDate value="${comment.created}" pattern="yyyy-MM-dd" />
+						</p>
+					</div>
+				</div>
+			</c:forEach>
+		</div>
+		<div class="container">
+			<form id="comment" name="comment" method="post" style="width: 70%">
+				<input type="hidden" name="article.id" value="${article.id }">
+				<textarea id="content" name="content" cols="3" class="form-control"
+					placeholder="${user.username}发表评论"></textarea>
+				<button type="submit" class="btn btn-info btn-block">发表</button>
+			</form>
+		</div>
 	</div>
+	<script type="text/javascript">
+	
+		var username = "${user.username}";
+		
+		var template = "<div class=\"media\">"
+		  +"<div class=\"media-left\">"
+		  +"<a href=\"#\">"
+		  +"<img class=\"media-object\" src=\"/pic/default_avatar.png\" style=\"max-height: 50px\" alt=\"...\">"
+		  +"</a>"
+		  +"</div>"
+		  +"<div class=\"media-body\">"
+		  +"<h4 class=\"media-heading\">${user.username}：</h4>"
+		  +"<p>{{comment_content}}</p>"
+		  +"<p>评论时间：刚刚</p>"
+		  +"</div>"
+		  +"</div>";
+		  
+		$(document).ready(function(){
+			if(username.length==0){
+				$("#content").attr("disabled", "disabled").attr("placeholder", "请登录后发表评论");
+			}
+			
+			$("#comment").submit(function(){
+				var content = $("#content").val();
+				if(content.length==0){
+					alert('请填写评论内容');
+					return false;
+				}
+				
+				$.ajax({
+					url:'/my/addComment/',
+					type:'post',
+					data:$(this).serialize(),
+					error: function(){alert('发表失败');},
+					success:function(data){
+						if(data.code==0){
+							var comments = $("#comments").html();
+							$("#comments").html(template.replace("{{comment_content}}", content) + comments);
+							$("#content").val("");
+						}else{
+							alert(data.message)
+						}
+					}
+					
+				},"json");
+				return false;
+			});
+		});
+	</script>
 </body>
 </html>

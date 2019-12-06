@@ -33,7 +33,18 @@ public class Article {
 
     private String original;
     
-    private User user;
+    private Integer comments;
+    
+    
+    public Integer getComments() {
+		return comments;
+	}
+
+	public void setComments(Integer comments) {
+		this.comments = comments;
+	}
+
+	private User user;
     
 
     public User getUser() {

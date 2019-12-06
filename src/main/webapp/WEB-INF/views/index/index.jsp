@@ -430,8 +430,12 @@
 		</div>
 	</div>
 	<hr>
+	<!-- 友情链接显示功能 -->
 	<div class="container" style="margin-bottom: 20px;">
 		<ul class="nav" style="justify-content: center;" id="link">
+			<li class="nav-item"><a class="nav-link active"
+					href="${link.url }" target="_blank" style="padding: 0;color: #666 ">友情链接:<span class="mod_copyright_split" style="margin: 0 8px;">|</span></a>
+			</li>
 			<c:forEach items="${linksInfo.list }" var="link" varStatus="i">
 				<li class="nav-item"><a class="nav-link active"
 					href="${link.url }" target="_blank" style="padding: 0;color: #666 ">${link.text }

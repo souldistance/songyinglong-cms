@@ -8,7 +8,6 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +21,7 @@ import com.songyinglong.cms.domain.ArticleWithBLOBs;
 import com.songyinglong.cms.domain.Category;
 import com.songyinglong.cms.domain.Channel;
 import com.songyinglong.cms.domain.Collect;
+import com.songyinglong.cms.domain.Comment;
 import com.songyinglong.cms.domain.Link;
 import com.songyinglong.cms.domain.User;
 import com.songyinglong.cms.exception.CMSAjaxException;
@@ -29,6 +29,7 @@ import com.songyinglong.cms.service.ArticleService;
 import com.songyinglong.cms.service.CategoryService;
 import com.songyinglong.cms.service.ChannelService;
 import com.songyinglong.cms.service.CollectService;
+import com.songyinglong.cms.service.CommentService;
 import com.songyinglong.cms.service.LinkService;
 import com.songyinglong.cms.util.Result;
 import com.songyinglong.cms.util.ResultUtil;
@@ -55,6 +56,9 @@ public class IndexController {
 	
 	@Resource
 	private CollectService collectService;
+	
+	@Resource
+	private CommentService commentService;
 	/**
 	 * 
 	 * @Title: index
@@ -95,7 +99,7 @@ public class IndexController {
 		model.addAttribute("picturesInfo", picturesInfo);
 		
 		//右侧友情链接
-		PageInfo<Link> linksInfo = linkService.selectLinks(1, 99);
+		PageInfo<Link> linksInfo = linkService.selectLinks(1, 10);
 		model.addAttribute("linksInfo", linksInfo);
 		
 		// 当ChannelId 为空时说明当前访问的是默认的热门文章
@@ -187,7 +191,7 @@ public class IndexController {
 			@Override
 			public void run() {
 				//右侧友情链接
-				PageInfo<Link> linksInfo = linkService.selectLinks(1, 99);
+				PageInfo<Link> linksInfo = linkService.selectLinks(1, 10);
 				model.addAttribute("linksInfo", linksInfo);
 			}
 		});
@@ -206,7 +210,7 @@ public class IndexController {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		long s2 = System.currentTimeMillis();
+		long s2 = System.currentTimeMillis(); 
 		System.out.println("首页访问共用时: ->>->>->>->>" + (s2 - s1) + "毫秒");
 		return "/index/index";
 	}
@@ -236,6 +240,12 @@ public class IndexController {
 				if(collect!=null) {
 					model.addAttribute("collect", collect);
 				}
+				Comment comment = new Comment();
+				comment.setUser(user); 
+				comment.setArticle(article);
+				//查询全部评论
+				List<Comment> comments=commentService.selectComments(comment);
+				model.addAttribute("comments", comments); 
 			}
 		}
 		// 如果该文章为图片集则需要解析json数组

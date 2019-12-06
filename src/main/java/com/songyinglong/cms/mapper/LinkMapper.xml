@@ -7,9 +7,9 @@
 		id,text,url,created
 	</sql>
 	<select id="selectLinks" resultType="link">
-		select <include refid="Base_Column_List"/> from cms_links
+		select <include refid="Base_Column_List"/> from cms_friendly_link
 	</select>
 	<insert id="insertLink">
-		insert into cms_links (<include refid="Base_Column_List"/>) values (null,#{text},#{url},#{created})
+		insert into cms_friendly_link (<include refid="Base_Column_List"/>) values (null,#{text},#{url},#{created})
 	</insert>
 </mapper>
