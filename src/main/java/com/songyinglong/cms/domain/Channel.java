@@ -1,7 +1,16 @@
 package com.songyinglong.cms.domain;
 
-public class Channel {
-    private Integer id;
+import java.io.Serializable;
+
+public class Channel implements Serializable{
+    /**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = -4188766994152814219L;
+
+	private Integer id;
 
     private String name;
 

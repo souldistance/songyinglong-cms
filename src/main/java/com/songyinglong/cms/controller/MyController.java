@@ -322,7 +322,16 @@ public class MyController {
 		model.addAttribute("article", article);
 		return "/my/article/detail";
 	}
-
+	
+	/**
+	 * 
+	 * @Title: addComment 
+	 * @Description: 添加评论
+	 * @param comment
+	 * @param session
+	 * @return
+	 * @return: Result
+	 */
 	@RequestMapping("/addComment")
 	@ResponseBody
 	public Result addComment(Comment comment,HttpSession session) {

@@ -1,9 +1,19 @@
 package com.songyinglong.cms.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Article {
-    private Integer id;
+import org.springframework.data.elasticsearch.annotations.Document;
+@Document(indexName ="cms_article",type="article")
+public class Article implements Serializable{
+    /**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = 2516670951779890892L;
+
+	private Integer id;
 
     private String title;
 
@@ -174,4 +184,14 @@ public class Article {
     public void setOriginal(String original) {
         this.original = original == null ? null : original.trim();
     }
+
+	@Override
+	public String toString() {
+		return "Article [id=" + id + ", title=" + title + ", picture=" + picture + ", channelId=" + channelId
+				+ ", categoryId=" + categoryId + ", userId=" + userId + ", hits=" + hits + ", hot=" + hot + ", status="
+				+ status + ", deleted=" + deleted + ", created=" + created + ", updated=" + updated + ", contentType="
+				+ contentType + ", keywords=" + keywords + ", original=" + original + ", comments=" + comments
+				+ ", user=" + user + "]";
+	}
+    
 }

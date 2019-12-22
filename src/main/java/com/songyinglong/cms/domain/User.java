@@ -1,9 +1,17 @@
 package com.songyinglong.cms.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class User {
-    private Integer id;
+public class User implements Serializable{
+    /**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private String username;
 

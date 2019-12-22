@@ -37,7 +37,7 @@
 				href="javascript:void(0)" data="/my/article/topublish"
 				class="list-group-item">发布文章</a></li>
 			<li class="list-group-item  text-center"><a class="channel"
-				href="javascript:void(0)" class="list-group-item">我的评论</a></li>
+				href="javascript:void(0)" class="list-group-item" >我的评论</a></li>
 			<li class="list-group-item  text-center"><a class="channel"
 				href="javascript:void(0)" class="list-group-item" ata="/my/article/uploadPicture">上传头像</a></li>
 			<li class="list-group-item  text-center"><a class="channel"

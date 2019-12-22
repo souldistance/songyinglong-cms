@@ -141,9 +141,8 @@
 </style>
 <script type="text/javascript">
 	function detail(id) {
-		$("#article_content").load("/article/detail?id="+id);
+		$("#article_content").load("/article/detail?id=" + id);
 	}
-	
 </script>
 <title>Insert title here</title>
 </head>
@@ -155,8 +154,7 @@
 		<ul class="nav" style="float: left;">
 			<li class="nav-item"><a class="nav-link active" href="#">下载APP</a>
 			</li>
-			<li class="nav-item"><a class="nav-link" href="#">0° / 0° 
-			</a></li>
+			<li class="nav-item"><a class="nav-link" href="#">0° / 0° </a></li>
 		</ul>
 		<ul class="nav">
 			<li class="nav-item"><a class="nav-link" href="#">反馈</a></li>
@@ -224,7 +222,7 @@
 					<li class="list-group-item"><c:choose>
 							<c:when test="${article.channelId==null }">
 								<!-- 轮播图 -->
-								<div id="demo" class="carousel slide" data-ride="carousel" 
+								<div id="demo" class="carousel slide" data-ride="carousel"
 									style="width: 100%; margin-top: 20px;" data-interval="2000">
 									<!-- 指示符 -->
 									<ul class="carousel-indicators">
@@ -287,15 +285,14 @@
 											href="#" onclick="detail(${article.id})"
 											style="margin: 3px; margin-top: 10px; font-size: 20px; font-weight: bold;"
 											title="${article.title }">${article.title }</a> --%>
-										<a href="/article/detail?id=${article.id}"  target="_blank"
-											style="margin: 3px; margin-top: 10px; font-size: 20px; font-weight: bold;"
-											title="${article.title }">${article.title }</a>
+										<a href="/article/detail?id=${article.id}" target="_blank"
+											style="margin: 3px; margin-top: 10px; font-size: 20px; font-weight: bold;">${article.title }</a>
 										<div style="padding: 8px;">
 											<p style="color: #999; font-size: 14px;">${article.user.username }
 												· 最后修改时间 :
 												<fmt:formatDate value="${article.updated }"
 													pattern="yyyy-MM-dd mm:HH:ss" />
-												· 点击量 : ${article.hits }
+												<%-- · 点击量 : ${article.hits } --%>
 											</p>
 										</div>
 									</div>
@@ -309,6 +306,23 @@
 
 			<!-- 右侧边栏 -->
 			<div class="col-md-3  min_h_500" id="right" style="margin-top: 30px;">
+				<!-- elasticsearch全文搜索 高亮查询 -->
+				<div>
+					<div class="input-group mb-3" style="width: 100% !important;">
+						<input type="text" class="form-control"
+							aria-label="Sizing example input"
+							aria-describedby="inputGroup-sizing-lg"
+							style="width: 80% !important; background-color: #f5f6f7;"
+							placeholder="请输入要搜索的内容" id="title" value="${article.title }">
+						<div class="input-group-prepend" style="width: 20% !important;">
+							<span class="input-group-text"
+								style="width: 100% !important;border: 1px solid #208eda;cursor:pointer;
+								background-color: #208eda;border-radius: 4px; border-top-left-radius: 0;
+								border-bottom-left-radius: 0; color: white;"
+								onclick="query()">搜索</span>
+						</div>
+					</div>
+				</div>
 				<!--  最新文章 -->
 				<div>
 					<div class="card" style="width: 18rem;">
@@ -322,8 +336,8 @@
 									<%-- <a data-toggle="modal" data-target="#exampleModalScrollable"
 										href="#" onclick="detail(${article.id})"
 										title="${article.title }">${article.title }</a> --%>
-									<a href="/article/detail?id=${article.id}"  target="_blank"
-											title="${article.title }">${article.title }</a>
+									<a href="/article/detail?id=${article.id}" target="_blank"
+										title="${article.title }">${article.title }</a>
 								</p>
 							</c:forEach>
 						</div>
@@ -371,7 +385,7 @@
 										<%-- <a data-toggle="modal" data-target="#exampleModalScrollable"
 											href="#" onclick="detail(${article.id})"
 											title="${article.title }">${article.title }</a> --%>
-										<a href="/article/detail?id=${article.id}"  target="_blank"
+										<a href="/article/detail?id=${article.id}" target="_blank"
 											title="${article.title }">${article.title }</a>
 									</div>
 								</div>
@@ -434,13 +448,15 @@
 	<div class="container" style="margin-bottom: 20px;">
 		<ul class="nav" style="justify-content: center;" id="link">
 			<li class="nav-item"><a class="nav-link active"
-					href="${link.url }" target="_blank" style="padding: 0;color: #666 ">友情链接:<span class="mod_copyright_split" style="margin: 0 8px;">|</span></a>
-			</li>
+				href="${link.url }" target="_blank" style="padding: 0; color: #666">友情链接:<span
+					class="mod_copyright_split" style="margin: 0 8px;">|</span></a></li>
 			<c:forEach items="${linksInfo.list }" var="link" varStatus="i">
 				<li class="nav-item"><a class="nav-link active"
-					href="${link.url }" target="_blank" style="padding: 0;color: #666 ">${link.text }
-					<c:if test="${linksInfo.list.size()-1!=i.index }"><span class="mod_copyright_split" style="margin: 0 8px;">|</span></c:if></a>
-				</li>
+					href="${link.url }" target="_blank" style="padding: 0; color: #666">${link.text }
+						<c:if test="${linksInfo.list.size()-1!=i.index }">
+							<span class="mod_copyright_split" style="margin: 0 8px;">|</span>
+						</c:if>
+				</a></li>
 			</c:forEach>
 		</ul>
 	</div>
@@ -449,8 +465,13 @@
 			if (pageNum == 0) {
 				return;
 			}
-			location = "/?pageNum=" + pageNum +"&channelId="+'${article.channelId }' +"&categoryId="
-					+ '${article.categoryId }';
+			location = "/?pageNum=" + pageNum + "&channelId="
+					+ '${article.channelId }' + "&categoryId="
+					+ '${article.categoryId }'+ "&title="
+					+ '${article.title }';
+		}
+		function query() {
+			location="/?title="+$("#title").val();
 		}
 	</script>
 </body>

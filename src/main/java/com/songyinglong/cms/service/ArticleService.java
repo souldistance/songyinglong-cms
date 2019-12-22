@@ -1,5 +1,7 @@
 package com.songyinglong.cms.service;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +20,7 @@ public interface ArticleService {
 	/**
 	 * 
 	 * @Title: selectArticles 
-	 * @Description: 查询全部文章
+	 * @Description: 查询文章
 	 * @param article
 	 * @param pageNum
 	 * @param pageSize
@@ -68,4 +70,57 @@ public interface ArticleService {
      * @return: boolean
      */
     boolean updateHits(Integer id);
+
+
+
+	/**
+	 * 
+	 * @Title: selectlastArticles 
+	 * @Description: 查询最新文章
+	 * @param newArticle
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @return: PageInfo<Article>
+	 */
+	PageInfo<Article> selectLastArticles(Article newArticle, int pageNum, int pageSize);
+
+
+	/**
+	 * 
+	 * @Title: selectlastArticles 
+	 * @Description: 查询图片集
+	 * @param newArticle
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @return: PageInfo<Article>
+	 */
+	PageInfo<Article> selectPicturesArticles(Article pictures, int i, int j);
+
+
+	/**
+	 * 
+	 * @Title: selectCenterArticles 
+	 * @Description: 首页中间区域查询文章功能
+	 * @param article
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @return: PageInfo<Article>
+	 */
+	PageInfo<Article> selectCenterArticles(Article article, Integer pageNum, Integer pageSize);
+
+
+	/**
+	 * 
+	 * @Title: ESHighLightQuery 
+	 * @Description: elasticsearch高亮查询
+	 * @param pageNum
+	 * @param pageSize
+	 * @param article
+	 * @return
+	 * @return: PageInfo<Article>
+	 */
+	PageInfo<Article> ESHighLightQuery(Integer pageNum, Integer pageSize, Article article);
 }

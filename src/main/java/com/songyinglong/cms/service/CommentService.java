@@ -2,7 +2,9 @@ package com.songyinglong.cms.service;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import com.songyinglong.cms.domain.Comment;
+import com.songyinglong.cms.domain.User;
 
 /** 
 * @author 作者:SongYinglong
@@ -30,4 +32,5 @@ public interface CommentService {
 	 */
 	List<Comment> selectComments(Comment comment);
 
+	
 }

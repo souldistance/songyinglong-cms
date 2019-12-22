@@ -6,6 +6,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +36,7 @@ import com.songyinglong.cms.service.LinkService;
 import com.songyinglong.cms.util.Result;
 import com.songyinglong.cms.util.ResultUtil;
 import com.songyinglong.cms.vo.ArticleVO;
+import com.songyinglong.common.utils.StringUtil;
 
 /**
  * @author 作者:SongYinglong
@@ -53,12 +56,14 @@ public class IndexController {
 
 	@Resource
 	private LinkService linkService;
-	
+
 	@Resource
 	private CollectService collectService;
-	
+
 	@Resource
 	private CommentService commentService;
+
+	
 	/**
 	 * 
 	 * @Title: index
@@ -79,40 +84,47 @@ public class IndexController {
 		// 查询全部栏目
 		List<Channel> channels = channelService.selectByExample();
 		model.addAttribute("channels", channels);
-		
-		// 右侧显示最新文章
+
+		// 中间显示最新文章
 		Article newArticle = new Article();
 		// 默认查询已审核和未被删除的文章
 		newArticle.setStatus(1);
 		newArticle.setDeleted(0);
 		newArticle.setContentType(ArticleEnum.HTML.getOrdinal());
-		PageInfo<Article> lastArticle = articleService.selectArticles(newArticle, 1, 5);
-		model.addAttribute("lastArticle", lastArticle);
-		
+		PageInfo<Article> lastArticles = articleService.selectLastArticles(newArticle, 1, 5);
+		model.addAttribute("lastArticle", lastArticles);
+
 		// 右侧图片集
 		Article pictures = new Article();
 		// 默认查询已审核和未被删除的文章
 		pictures.setStatus(1);
 		pictures.setDeleted(0);
 		pictures.setContentType(ArticleEnum.IMAGE.getOrdinal());
-		PageInfo<Article> picturesInfo = articleService.selectArticles(pictures, 1, 5);
+		PageInfo<Article> picturesInfo = articleService.selectPicturesArticles(pictures, 1, 5);
 		model.addAttribute("picturesInfo", picturesInfo);
-		
-		//右侧友情链接
+
+		// 右侧友情链接
 		PageInfo<Link> linksInfo = linkService.selectLinks(1, 10);
 		model.addAttribute("linksInfo", linksInfo);
 		
-		// 当ChannelId 为空时说明当前访问的是默认的热门文章
-		if (article.getChannelId() == null) {
-			// 查询热门文章
-			article.setHot(1);
-		} else {
-			// ChannelId不为空是 按栏目查询 查询该栏目下全部类别
-			List<Category> categories = categoryService.selectByExample(article.getChannelId());
-			model.addAttribute("categories", categories);
+		//中间部分文章显示
+		PageInfo<Article> pageInfo=null;
+		//如果传入title则为高亮查询
+		if(StringUtil.hasText(article.getTitle())) {
+			pageInfo=articleService.ESHighLightQuery(pageNum, pageSize,article);
+		}else {
+			// 当ChannelId 为空时说明当前访问的是默认的热门文章
+			if (article.getChannelId() == null) {
+				// 查询热门文章
+				article.setHot(1);
+			} else {
+				// ChannelId不为空是 按栏目查询 查询该栏目下全部类别
+				List<Category> categories = categoryService.selectByExample(article.getChannelId());
+				model.addAttribute("categories", categories);
+			}
+			// 查询中间部分该显示的内容(ChannelId为空时查询热门文章 | ChannelId不为空是 按栏目查询)
+			pageInfo = articleService.selectCenterArticles(article, pageNum, pageSize);
 		}
-		// 查询中间部分该显示的内容(ChannelId为空时查询热门文章 | ChannelId不为空是 按栏目查询)
-		PageInfo<Article> pageInfo = articleService.selectArticles(article, pageNum, pageSize);
 		model.addAttribute("pg", pageInfo);
 		model.addAttribute("article", article);
 		long s2 = System.currentTimeMillis();
@@ -190,12 +202,12 @@ public class IndexController {
 		Thread t5 = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				//右侧友情链接
+				// 右侧友情链接
 				PageInfo<Link> linksInfo = linkService.selectLinks(1, 10);
 				model.addAttribute("linksInfo", linksInfo);
 			}
 		});
-				
+
 		t1.start();
 		t2.start();
 		t3.start();
@@ -210,7 +222,7 @@ public class IndexController {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		long s2 = System.currentTimeMillis(); 
+		long s2 = System.currentTimeMillis();
 		System.out.println("首页访问共用时: ->>->>->>->>" + (s2 - s1) + "毫秒");
 		return "/index/index";
 	}
@@ -225,27 +237,27 @@ public class IndexController {
 	 * @return: String
 	 */
 	@RequestMapping("/article/detail")
-	public String articleDetail(Integer id, Model model,HttpServletRequest  request) {
+	public String articleDetail(Integer id, Model model, HttpServletRequest request) {
 		// 查询前访问量加一
 		articleService.updateHits(id);
-		//根据文章ID查询该文章详细信息
+		// 根据文章ID查询该文章详细信息
 		ArticleWithBLOBs article = articleService.selectByPrimaryKey(id);
-		//判断当前是否有用户登录
+		// 判断当前是否有用户登录
 		HttpSession session = request.getSession(false);
-		if(session!=null) {
+		if (session != null) {
 			User user = (User) session.getAttribute("user");
-			if(user!=null) {
+			if (user != null) {
 				Collect collect = collectService.queryByTextAndUserId(article.getTitle(), user.getId());
-				//判断该文章是否被收藏
-				if(collect!=null) {
+				// 判断该文章是否被收藏
+				if (collect != null) {
 					model.addAttribute("collect", collect);
 				}
 				Comment comment = new Comment();
-				comment.setUser(user); 
+				comment.setUser(user);
 				comment.setArticle(article);
-				//查询全部评论
-				List<Comment> comments=commentService.selectComments(comment);
-				model.addAttribute("comments", comments); 
+				// 查询全部评论
+				List<Comment> comments = commentService.selectComments(comment);
+				model.addAttribute("comments", comments);
 			}
 		}
 		// 如果该文章为图片集则需要解析json数组
@@ -258,10 +270,10 @@ public class IndexController {
 		model.addAttribute("article", article);
 		return "/index/article";
 	}
-	
+
 	/**
 	 * 
-	 * @Title: collectArticle 
+	 * @Title: collectArticle
 	 * @Description: 收藏文章功能
 	 * @param collect
 	 * @param request
@@ -270,16 +282,16 @@ public class IndexController {
 	 */
 	@PostMapping("/index/article/collect")
 	@ResponseBody
-	public Result collectArticle(Collect collect,HttpServletRequest request) {
+	public Result collectArticle(Collect collect, HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
-		//判断当前是否有用户登录
-		if(session==null) {
+		// 判断当前是否有用户登录
+		if (session == null) {
 			throw new CMSAjaxException(1, "收藏失败,请先登录!");
-		}else {
+		} else {
 			User user = (User) session.getAttribute("user");
-			if(user==null) {
+			if (user == null) {
 				throw new CMSAjaxException(1, "收藏失败,请先登录!");
-			}else {
+			} else {
 				collect.setUserId(user.getId());
 				collectService.insertCollect(collect);
 				return ResultUtil.success();

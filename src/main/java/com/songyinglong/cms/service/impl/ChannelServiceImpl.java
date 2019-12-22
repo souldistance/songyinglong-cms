@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.songyinglong.cms.domain.Channel;
@@ -21,6 +23,8 @@ public class ChannelServiceImpl implements ChannelService {
 	@Resource
 	private ChannelMapper channelMapper;
 	
+	@Resource
+	private RedisTemplate<String, Channel> redisTemplate;
 	/**
 	 * 
 	 * @Title: selectByExample 
@@ -30,7 +34,17 @@ public class ChannelServiceImpl implements ChannelService {
 	 */
 	@Override
 	public List<Channel> selectByExample() {
-		return channelMapper.selectByExample(null);
+		System.out.println("=================查询全部栏目===================");
+		ListOperations<String, Channel> opsForList = redisTemplate.opsForList();
+		List<Channel> channels=null;
+		if(redisTemplate.hasKey("CMS_channel")) {
+			channels = opsForList.range("CMS_channel", 0, -1);
+		}else {
+			channels=channelMapper.selectByExample(null);
+			opsForList.rightPushAll("CMS_channel", channels);
+		}
+		System.out.println("=================================================");
+		return channels;
 	}
 
 }

@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.songyinglong.cms.domain.Category;
@@ -22,6 +24,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Resource
 	private CategoryMapper categoryMapper;
+	
+	@Resource
+	private RedisTemplate<String, ?> redisTemplate;
 	/**
 	 * 
 	 * @Title: selectByExample 
@@ -32,9 +37,19 @@ public class CategoryServiceImpl implements CategoryService {
 	 */
 	@Override 
 	public List<Category> selectByExample(Integer channelId) {
-		CategoryExample example=new CategoryExample();
-		example.createCriteria().andChannelIdEqualTo(channelId);
-		return categoryMapper.selectByExample(example);
+		System.out.println("=======================根据栏目ID查询全部分类==========================");
+		HashOperations<String, String, List<Category>> opsForHash = redisTemplate.opsForHash();
+		List<Category> categories=null;
+		if(opsForHash.hasKey("CMS_category", channelId.toString())) {
+			categories = opsForHash.get("CMS_category", channelId.toString());
+		}else {
+			CategoryExample example=new CategoryExample();
+			example.createCriteria().andChannelIdEqualTo(channelId);
+			categories = categoryMapper.selectByExample(example);
+			opsForHash.put("CMS_category", channelId.toString(), categories);
+		}
+		System.out.println("========================================================================");
+		return categories;
 	}
 
 }

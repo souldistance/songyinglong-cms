@@ -4,8 +4,11 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.songyinglong.cms.domain.Link;
@@ -24,6 +27,9 @@ public class LinkServiceImpl implements LinkService {
 
 	@Resource
 	private LinkMapper linkMapper;
+	
+	@Resource
+	private RedisTemplate<String, Link> redisTemplate;
 	/**
 	 * 
 	 * @Title: selectLinks 
@@ -33,9 +39,24 @@ public class LinkServiceImpl implements LinkService {
 	 */
 	@Override
 	public PageInfo<Link> selectLinks(Integer pageNum,Integer pageSize) {
-		PageHelper.startPage(pageNum, pageSize);
-		List<Link> links = linkMapper.selectLinks();
-		return new PageInfo<Link>(links);
+		System.out.println("==============================查询友情链接==================================");
+		PageInfo<Link> pageInfo =null;
+		ListOperations<String, Link> opsForList = redisTemplate.opsForList();
+		if(redisTemplate.hasKey("CMS_links")) {
+			List<Link> range = opsForList.range("CMS_links", (pageNum-1)*pageSize, pageNum*pageSize-1);
+			Page<Link> page=new Page<Link>(pageNum, pageSize);
+			page.setTotal(opsForList.size("CMS_links"));
+			page.addAll(range);
+			pageInfo=new PageInfo<Link>(page);
+		}else {
+			List<Link> AllLink = linkMapper.selectLinks();
+			opsForList.rightPushAll("CMS_links", AllLink);
+			PageHelper.startPage(pageNum, pageSize);
+			List<Link> links = linkMapper.selectLinks();
+			pageInfo = new PageInfo<Link>(links);
+		}
+		System.out.println("=============================================================================");
+		return pageInfo;
 	}
 
 	/**

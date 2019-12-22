@@ -5,11 +5,11 @@
 <script type="text/javascript">
 	//修改文章审核状态
 	function updateStatus(id,status) {
-		$("#content-wrapper").load(
-				"/admin/article/update?id="+id+"&status="+status);
+		/* $("#content-wrapper").load(
+				"/admin/article/update?id="+id+"&status="+status); */
 		$.post(
 			"/admin/article/update",
-			{id:id,status:status},
+			{id:id,status:status,contentType:0},
 			function (msg) {
 				if(msg){
 					alert("操作成功!");

@@ -1,7 +1,16 @@
 package com.songyinglong.cms.domain;
 
-public class Category {
-    private Integer id;
+import java.io.Serializable;
+
+public class Category implements Serializable{
+    /**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = 5899944911311978784L;
+
+	private Integer id;
 
     private String name;
 

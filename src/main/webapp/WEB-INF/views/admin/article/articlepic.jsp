@@ -5,15 +5,16 @@
 <script type="text/javascript">
 	//修改文章审核状态
 	function updateStatus(id, status) {
-		$("#content-wrapper").load(
-				"/admin/article/update?id=" + id + "&status=" + status);
+		/* $("#content-wrapper").load(
+				"/admin/article/update?id=" + id + "&status=" + status); */
 		$.post("/admin/article/update", {
 			id : id,
-			status : status
+			status : status,
+			contentType : 1
 		}, function(msg) {
 			if (msg) {
 				alert("操作成功!");
-				$("#content-wrapper").load("/admin/article");
+				$("#content-wrapper").load("/admin/article?status=2");
 			} else {
 				alert("操作失败!");
 			}
