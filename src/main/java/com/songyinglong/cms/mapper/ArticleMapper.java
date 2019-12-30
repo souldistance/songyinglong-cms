@@ -34,6 +34,16 @@ public interface ArticleMapper {
     int updateByPrimaryKeyWithBLOBs(ArticleWithBLOBs record);
 
     int updateByPrimaryKey(Article record);
+
+    /**
+     * 
+     * @Title: addHit 
+     * @Description: 访问时增加点击量
+     * @param id
+     * @return
+     * @return: int
+     */
+	int addHit(@Param("id")int id);
     
-    int updateHits(@Param("id")Integer id);
+    
 }

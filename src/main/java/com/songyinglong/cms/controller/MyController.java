@@ -310,7 +310,7 @@ public class MyController {
 	@RequestMapping("/article/detail")
 	public String articleDetail(Integer id, Model model) {
 		// 查询前访问量加一
-		articleService.updateHits(id);
+		articleService.addHit(id);
 		ArticleWithBLOBs article = articleService.selectByPrimaryKey(id);
 		// 如果文件类型为1则该文章为图片集 需要解析json数组
 		if (article.getContentType() == 1) {

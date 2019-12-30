@@ -61,15 +61,7 @@ public interface ArticleService {
 	 */
     boolean insertSelective(ArticleWithBLOBs record);
 
-    /**
-     * 
-     * @Title: updateHits 
-     * @Description: 访问时访问量+1
-     * @param id
-     * @return
-     * @return: boolean
-     */
-    boolean updateHits(Integer id);
+    
 
 
 
@@ -114,13 +106,26 @@ public interface ArticleService {
 
 	/**
 	 * 
-	 * @Title: ESHighLightQuery 
-	 * @Description: elasticsearch高亮查询
-	 * @param pageNum
-	 * @param pageSize
+	 * @Title: esSelectArticles 
+	 * @Description: 文章ElasticSearch全文搜索功能
 	 * @param article
+	 * @param pageSize 
+	 * @param pageNum 
 	 * @return
 	 * @return: PageInfo<Article>
 	 */
-	PageInfo<Article> ESHighLightQuery(Integer pageNum, Integer pageSize, Article article);
+	PageInfo<Article> esSelectArticles(Article article, Integer pageNum, Integer pageSize);
+
+
+	/**
+	 * 
+	 * @Title: addHit 
+	 * @Description: 访问文章时增加点击量
+	 * @param parseInt
+	 * @return: void
+	 */
+	void addHit(int parseInt);
+
+
+	
 }

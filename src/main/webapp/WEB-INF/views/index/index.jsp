@@ -461,6 +461,7 @@
 		</ul>
 	</div>
 	<script type="text/javascript">
+		//分页功能
 		function limit(pageNum) {
 			if (pageNum == 0) {
 				return;
@@ -470,6 +471,7 @@
 					+ '${article.categoryId }'+ "&title="
 					+ '${article.title }';
 		}
+		//全文搜索功能
 		function query() {
 			location="/?title="+$("#title").val();
 		}

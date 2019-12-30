@@ -17,12 +17,13 @@ import com.songyinglong.cms.service.CategoryService;
 import com.songyinglong.cms.service.ChannelService;
 import com.songyinglong.cms.service.impl.JunitParent;
 import com.songyinglong.common.utils.DateUtil;
+import com.songyinglong.common.utils.FileUtil;
 import com.songyinglong.common.utils.RandomUtil;
 import com.songyinglong.common.utils.StreamUtil;
 
 /** 
 * @author 作者:SongYinglong
-* @version 创建时间：2019年12月19日 下午7:35:32 
+* @version 创建时间：2019年12月24日 下午1:41:27 
 * 类功能说明 
 */
 public class ProductorTest extends JunitParent{
@@ -36,45 +37,50 @@ public class ProductorTest extends JunitParent{
 	@Resource
 	private CategoryService categoryService;
 	
+	/**
+	 * 
+	 * @Title: sendMsgtest 
+	 * @Description:使用流工具类文本文件读取方法读取1000个文本文件 将生成Article对象通过Kafka发送到消费端
+	 * @return: void
+	 */
 	@Test
-	public void sendMsgTest() {
+	public void sendMsgtest() {
+		//读取文件夹
 		File file=new File("D:\\article1");
-		//获取已经爬取好的文章
 		File[] listFiles = file.listFiles();
+		//文章个数
+		System.out.println(listFiles.length);
 		for (File f : listFiles) {
+			//文章标题
+			String title = f.getName().replace(".txt", "");
+			ArticleWithBLOBs article = new ArticleWithBLOBs();
+			article.setTitle(title);
 			//读取文章内容
 			String content = StreamUtil.readTextFile(f);
-			//获取文章标题
-			String title=f.getName().replace(".txt", "");
-			//封装数据到文章类
-			ArticleWithBLOBs article=new ArticleWithBLOBs();
-			article.setTitle(title);
-			article.setContent(content);
-			//截取文章内容前140字为文章摘要
 			String summary=content;
 			if(content.length()>140) {
-				summary = content.substring(0, 140);
+				//在文本内容中截取前140个字作为摘要
+				summary=content.substring(0, 140);
 			}
 			article.setSummary(summary);
-			//用随机值为点击量赋值
+			//“点击量”和“是否热门”、“频道”字段要使用随机值
 			article.setHits(RandomUtil.random(0, 10000));
-			//随机热门状态
 			article.setHot(RandomUtil.random(0, 1));
-			//设置随机栏目
 			List<Channel> channels = channelService.selectByExample();
-			int channelNum = RandomUtil.random(0, channels.size()-1);
-			article.setChannelId(channels.get(channelNum).getId());
-			//设置随机类别
-			List<Category> categories = categoryService.selectByExample(channels.get(channelNum).getId());
-			int categoryNum = RandomUtil.random(0, categories.size()-1);
-			article.setCategoryId(categories.get(categoryNum).getId());
-			//设置随机创建日期
-			article.setCreated(DateUtil.randomDate(DateUtil.getDateByString("2019-01-01", "yyyy-MM-dd"), new Date()));
-			article.setContentType(0);
+			int channel = RandomUtil.random(0, channels.size()-1);
+			article.setChannelId(channels.get(channel).getId());
+			List<Category> categories = categoryService.selectByExample(channels.get(channel).getId());
+			int category = RandomUtil.random(0, categories.size()-1);
+			article.setCategoryId(categories.get(category).getId());
+			//文章发布日期从2019年1月1日模拟到今天
+			article.setCreated(DateUtil.randomDate("2019-01-01", DateUtil.getDateOfString(new Date(), "yyyy-MM-dd")));
+			article.setUpdated(article.getCreated());
+			article.setContent(content);
+			article.setContentType(RandomUtil.random(0, 1));
 			article.setDeleted(0);
-			article.setStatus(1);
+			//编写Kafka生产者，然后将生成Article对象通过Kafka发送到消费端
 			String jsonString = JSON.toJSONString(article);
-			kafkaTemplate.sendDefault("article_add", jsonString);
+			kafkaTemplate.sendDefault("cms_addArticle", jsonString);
 		}
 	}
 

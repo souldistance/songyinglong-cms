@@ -3,6 +3,7 @@ package com.songyinglong.cms.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 @Document(indexName ="cms_article",type="article")
 public class Article implements Serializable{
@@ -12,7 +13,7 @@ public class Article implements Serializable{
 	 * @Description: TODO
 	 */
 	private static final long serialVersionUID = 2516670951779890892L;
-
+	@Id
 	private Integer id;
 
     private String title;

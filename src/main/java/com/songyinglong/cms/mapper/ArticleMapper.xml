@@ -267,9 +267,9 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
-  <update id="updateHits" parameterType="java.lang.Integer">
-   	 update cms_article set hits=hits+1 where id = #{id,jdbcType=INTEGER}
-   </update>
+  <update id="addHit">
+  	 update cms_article set hits=hits+1 where id=#{id};
+  </update>
   <update id="updateByExampleSelective" parameterType="map">
     update cms_article
     <set>

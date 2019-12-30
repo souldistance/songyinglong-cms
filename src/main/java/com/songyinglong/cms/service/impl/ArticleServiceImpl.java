@@ -45,7 +45,6 @@ public class ArticleServiceImpl implements ArticleService {
 
 	@Resource
 	private ElasticsearchTemplate elasticsearchTemplate;
-
 	/**
 	 * 
 	 * @Title: selectInit
@@ -139,13 +138,12 @@ public class ArticleServiceImpl implements ArticleService {
 					} else {
 						articleRedisTemplate.delete("pictures_Article");
 					}
-					if (article.getStatus() != null && article.getStatus() == 1) {
-						// 管理员审核文章后添加文章
-						IndexQuery query = new IndexQuery();
+					//文章审核通过 则向es中添加索引
+					if(article.getStatus()!=null && article.getStatus()==1) {
+						IndexQuery query=new IndexQuery();
 						query.setObject(article);
 						elasticsearchTemplate.index(query);
-					}// 删除文章时 同时删除elasticsearch中存储的文章
-					else{
+					}else {
 						elasticsearchTemplate.delete(Article.class, article.getId().toString());
 					}
 				}
@@ -191,23 +189,7 @@ public class ArticleServiceImpl implements ArticleService {
 
 	}
 
-	/**
-	 * 
-	 * @Title: updateHits
-	 * @Description: 访问时访问量+1
-	 * @param id
-	 * @return
-	 * @return: boolean
-	 */
-	@Override
-	public boolean updateHits(Integer id) {
-		try {
-			return articleMapper.updateHits(id) > 0;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new CMSException("访问量更新操作失败");
-		}
-	}
+	
 
 	/**
 	 * 
@@ -326,27 +308,39 @@ public class ArticleServiceImpl implements ArticleService {
 		System.out.println("===========================================================================");
 		return centerArticle;
 	}
-
+	
 	/**
 	 * 
-	 * @Title: ESHighLightQuery
-	 * @Description: elasticsearch高亮查询
-	 * @param pageNum
-	 * @param pageSize
+	 * @Title: esSelectArticles 
+	 * @Description: 文章ElasticSearch全文搜索功能
 	 * @param article
 	 * @return
 	 * @return: PageInfo<Article>
 	 */
 	@Override
-	public PageInfo<Article> ESHighLightQuery(Integer pageNum, Integer pageSize, Article article) {
-		Class []clazz= {User.class,Channel.class,Category.class};
-		AggregatedPage<Article> selectObjects = ESUtils.selectObjects(elasticsearchTemplate, Article.class, Arrays.asList(clazz),
-				pageNum - 1, pageSize, "id", new String[] { "title" }, article.getTitle());
-		List<Article> articles = selectObjects.getContent();
-		Page<Article> page = new Page<Article>(pageNum,pageSize);
-		page.addAll(articles);
-		page.setTotal(selectObjects.getTotalElements());
-		return new PageInfo<Article>(page);
+	public PageInfo<Article> esSelectArticles(Article article,Integer pageNum, Integer pageSize) {
+		Class classes[]=new Class[] {User.class,Channel.class,Category.class};
+		PageInfo<Article> pageInfo = ESUtils.select(elasticsearchTemplate, Article.class, Arrays.asList(classes), pageNum, pageSize, "id", new String[] {"title"}, article.getTitle());
+		return pageInfo;
 	}
+
+
+	/**
+	 * 
+	 * @Title: addHit 
+	 * @Description: 访问文章时增加点击量
+	 * @param parseInt
+	 * @return: void
+	 */
+	@Override
+	public void addHit(int id) {
+		try {
+			articleMapper.addHit(id);
+		} catch (Exception e) {
+			throw new CMSException("修改访问量失败");
+		}
+		
+	}
+
 
 }

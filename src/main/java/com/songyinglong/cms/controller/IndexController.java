@@ -1,6 +1,7 @@
 package com.songyinglong.cms.controller;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +9,9 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,7 +67,11 @@ public class IndexController {
 	@Resource
 	private CommentService commentService;
 
-	
+	@Resource
+	private RedisTemplate<String, String> redisTemplate;
+
+	@Resource
+	private KafkaTemplate<String, String> kafkaTemplate;
 	/**
 	 * 
 	 * @Title: index
@@ -85,7 +93,7 @@ public class IndexController {
 		List<Channel> channels = channelService.selectByExample();
 		model.addAttribute("channels", channels);
 
-		// 中间显示最新文章
+		// 显示最新文章
 		Article newArticle = new Article();
 		// 默认查询已审核和未被删除的文章
 		newArticle.setStatus(1);
@@ -106,12 +114,15 @@ public class IndexController {
 		// 右侧友情链接
 		PageInfo<Link> linksInfo = linkService.selectLinks(1, 10);
 		model.addAttribute("linksInfo", linksInfo);
-		
-		//中间部分文章显示
-		PageInfo<Article> pageInfo=null;
-		//如果传入title则为高亮查询
+
+		// 中间部分文章显示
+		PageInfo<Article> pageInfo = null;
+		// 文章ElasticSearch全文搜索功能 如果传入title则为高亮查询
 		if(StringUtil.hasText(article.getTitle())) {
-			pageInfo=articleService.ESHighLightQuery(pageNum, pageSize,article);
+			long t1 = System.currentTimeMillis();
+			pageInfo=articleService.esSelectArticles(article, pageNum, pageSize);
+			long t2 = System.currentTimeMillis();
+			System.out.println("ElasticSearch全文搜索耗时"+(t2-t1)+"毫秒");
 		}else {
 			// 当ChannelId 为空时说明当前访问的是默认的热门文章
 			if (article.getChannelId() == null) {
@@ -238,9 +249,9 @@ public class IndexController {
 	 */
 	@RequestMapping("/article/detail")
 	public String articleDetail(Integer id, Model model, HttpServletRequest request) {
-		// 查询前访问量加一
-		articleService.updateHits(id);
-		// 根据文章ID查询该文章详细信息
+		//编写Kafka生产者 在文章详情页Controller方法里调用Kafka生产发送当前文章ID
+		kafkaTemplate.sendDefault("article_addHit", id.toString());
+		// 根据文章ID查询该文章详细信息 
 		ArticleWithBLOBs article = articleService.selectByPrimaryKey(id);
 		// 判断当前是否有用户登录
 		HttpSession session = request.getSession(false);
